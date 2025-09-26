@@ -10,6 +10,7 @@ beforeAll(async () => {
     testUserAuthToken = registerRes.body.token;
     expectValidJwt(testUserAuthToken);
 });
+// TODO: write register +/- tests
 
 test('login', async () => {
     const loginRes = await request(app).put('/api/auth').send(testUser);
@@ -19,6 +20,18 @@ test('login', async () => {
     const expectedUser = { ...testUser, roles: [{ role: 'diner' }] };
     delete expectedUser.password;
     expect(loginRes.body.user).toMatchObject(expectedUser);
+});
+
+test('login negative', async () => {
+
+});
+
+test('logout', async () => {
+    const loginRes = await request(app).put('/api/auth').send(testUser);
+    const logoutRes = await request(app).delete('/api/auth').set('Authorization', `Bearer ${loginRes.body.token}`).send(testUser);
+
+   expect(logoutRes.status).toBe(200);
+   expect(logoutRes.body.message).toMatch('logout successful');
 });
 
 function expectValidJwt(potentialJwt) {
