@@ -12,6 +12,14 @@ beforeAll(async () => {
 });
 // TODO: write register +/- tests
 
+test ('register negative', async () => {
+   const newInvalidUser = {name: 'pizza man', email: 'pizzaman@pizzaman.com'};
+   registerRes = await request(app).post('/api/auth').send(newInvalidUser);
+
+   expect(registerRes.statusCode).toBe(400);
+   expect(registerRes.body.message).toMatch('name, email, and password are required')
+});
+
 test('login', async () => {
     const loginRes = await request(app).put('/api/auth').send(testUser);
     expect(loginRes.status).toBe(200);
@@ -22,8 +30,12 @@ test('login', async () => {
     expect(loginRes.body.user).toMatchObject(expectedUser);
 });
 
-test('login negative', async () => {
+test('logout negative', async () => {
+    await request(app).put('/api/auth').send(testUser);
+    //Send DELETE request without auth token
+    const loginRes = await request(app).delete('/api/auth').send(testUser);
 
+    expect(loginRes.status).toBe(401);
 });
 
 test('logout', async () => {
