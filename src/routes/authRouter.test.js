@@ -10,7 +10,7 @@ beforeAll(async () => {
     testUserAuthToken = registerRes.body.token;
     expectValidJwt(testUserAuthToken);
 });
-// TODO: write register +/- tests
+
 
 test ('register negative', async () => {
    const newInvalidUser = {name: 'pizza man', email: 'pizzaman@pizzaman.com'};
