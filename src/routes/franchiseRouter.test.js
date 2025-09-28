@@ -7,22 +7,22 @@ function randomName() {
     return Math.random().toString(36).substring(2, 12);
 }
 
-let franchiseeTest = {};
+let testAdmin= {};
 
 beforeAll(async () => {
     const userName = randomName();
-    franchiseeTest = {name: userName, email: userName + '@gmail.com', password: 'f', roles: [{role: Role.Franchisee}]};
-    await DB.addUser(franchiseeTest);
+    testAdmin = {name: userName, email: userName + '@gmail.com', password: 'a', roles: [{role: Role.Admin}]};
+    await DB.addUser(testAdmin);
 
 });
 
 test('create franchise positive', async () =>{
-    const newFranchise = {name: randomName(), admins: [{email: franchiseeTest.email}]};
-    const loginRes = await request(app).put('/api/auth/login').send(franchiseeTest);
+    const newFranchise = {name: randomName(), admins: [{email: testAdmin.email}]};
+    const loginRes = await request(app).put('/api/auth/login').send(testAdmin);
     const createRes = await request(app).post('/api/franchise').set('Authorization', `Bearer ${loginRes.body.token}`).send(newFranchise);
 
     expect(createRes.status).toBe(200);
     expect(createRes.body.name).toMatch(newFranchise.name);
-    expect(createRes.body.admins.email).toMatch(franchiseeTest.email);
+    expect(createRes.body.admins.email).toMatch(testAdmin.email);
 
 });
