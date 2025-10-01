@@ -356,6 +356,25 @@ class DB {
     }
   }
 
+  async deleteDatabase(connection){
+      try{
+          const connection = await this._getConnection();
+          try{
+              const dbExists = await this.checkDatabaseExists(connection);
+
+              if (!dbExists) {
+                  console.log('Database does not exist, nothing to delete');
+              }
+
+              await connection.query(`DROP DATABASE ${config.db.connection.database}`);
+          }finally {
+              connection.end();
+          }
+      }catch (err) {
+          console.error(JSON.stringify({ message: 'Error initializing database', exception: err.message, connection: config.db.connection }));
+      }
+  }
+
   async checkDatabaseExists(connection) {
     const [rows] = await connection.execute(`SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?`, [config.db.connection.database]);
     return rows.length > 0;
