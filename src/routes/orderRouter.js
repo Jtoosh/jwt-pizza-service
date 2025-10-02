@@ -7,7 +7,7 @@ const {DB} = require('../database/database.js');
 
 function createOrderRouter(db){
     const router = express.Router();
-
+    this.db = db;
     router.get('/', async (req, res) => {
         const orders = await db.getOrders(req.user);
         res.json(orders);
@@ -55,7 +55,7 @@ orderRouter.docs = [
 orderRouter.get(
   '/menu',
   asyncHandler(async (req, res) => {
-    res.send(await DB.getMenu());
+    res.send(await this.db.getMenu());
   })
 );
 
@@ -69,8 +69,8 @@ orderRouter.put(
     }
 
     const addMenuItemReq = req.body;
-    await DB.addMenuItem(addMenuItemReq);
-    res.send(await DB.getMenu());
+    await this.db.addMenuItem(addMenuItemReq);
+    res.send(await this.db.getMenu());
   })
 );
 
@@ -79,7 +79,7 @@ orderRouter.get(
   '/',
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
-    res.json(await DB.getOrders(req.user, req.query.page));
+    res.json(await this.db.getOrders(req.user, req.query.page));
   })
 );
 

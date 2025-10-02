@@ -1,14 +1,12 @@
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
-let config;
+const config = require('../config.js');
 const { StatusCodeError } = require('../endpointHelper.js');
 const { Role } = require('../model/model.js');
 const dbModel = require('./dbModel.js');
-
 class DB {
-  constructor(configParam) {
-      this.config = configParam;
-      this.initialized = this.initializeDatabase();
+  constructor() {
+    this.initialized = this.initializeDatabase();
   }
 
   async getMenu() {
@@ -135,7 +133,7 @@ class DB {
   async getOrders(user, page = 1) {
     const connection = await this.getConnection();
     try {
-      const offset = this.getOffset(page, this.config.db.listPerPage);
+      const offset = this.getOffset(page, config.db.listPerPage);
       const orders = await this.query(connection, `SELECT id, franchiseId, storeId, date FROM dinerOrder WHERE dinerId=? LIMIT ${offset},${config.db.listPerPage}`, [user.id]);
       for (const order of orders) {
         let items = await this.query(connection, `SELECT id, menuId, description, price FROM orderItem WHERE orderId=?`, [order.id]);
@@ -316,14 +314,14 @@ class DB {
 
   async _getConnection(setUse = true) {
     const connection = await mysql.createConnection({
-      host: this.config.db.connection.host,
-      user: this.config.db.connection.user,
-      password: this.config.db.connection.password,
-      connectTimeout: this.config.db.connection.connectTimeout,
+      host: config.db.connection.host,
+      user: config.db.connection.user,
+      password: config.db.connection.password,
+      connectTimeout: config.db.connection.connectTimeout,
       decimalNumbers: true,
     });
     if (setUse) {
-      await connection.query(`USE ${this.config.db.connection.database}`);
+      await connection.query(`USE ${config.db.connection.database}`);
     }
     return connection;
   }
@@ -335,8 +333,8 @@ class DB {
         const dbExists = await this.checkDatabaseExists(connection);
         console.log(dbExists ? 'Database exists' : 'Database does not exist, creating it');
 
-        await connection.query(`CREATE DATABASE IF NOT EXISTS ${this.config.db.connection.database}`);
-        await connection.query(`USE ${this.config.db.connection.database}`);
+        await connection.query(`CREATE DATABASE IF NOT EXISTS ${config.db.connection.database}`);
+        await connection.query(`USE ${config.db.connection.database}`);
 
         if (!dbExists) {
           console.log('Successfully created database');
@@ -368,7 +366,7 @@ class DB {
                   console.log('Database does not exist, nothing to delete');
               }
 
-              await connection.query(`DROP DATABASE ${this.config.db.connection.database}`);
+              await connection.query(`DROP DATABASE ${config.db.connection.database}`);
           }finally {
               connection.end();
           }
@@ -383,4 +381,5 @@ class DB {
   }
 }
 
-module.exports = { Role, DB };
+const db = new DB();
+module.exports = { Role, DB: db };
