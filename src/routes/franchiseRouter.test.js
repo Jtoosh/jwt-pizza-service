@@ -16,6 +16,10 @@ beforeAll(async () => {
 
 });
 
+afterAll(async () => {
+    await DB.deleteDatabase();
+})
+
 test('create franchise positive', async () =>{
     const newFranchise = {name: randomName(), admins: [{email: testAdmin.email}]};
     const loginRes = await request(app).put('/api/auth/login').send(testAdmin);

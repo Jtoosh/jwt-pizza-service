@@ -2,19 +2,9 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const config = require('../config.js');
 const { asyncHandler } = require('../endpointHelper.js');
-const {  Role } = require('../database/database.js');
-const {DB} = require('../database/database.js');
+const {  Role,DB } = require('../database/database.js');
 
-function createAuthRouter(db){
-    const router = express.Router();
-
-    router.get('/', async (req, res) => {
-        const auths = await db.get(req.user);
-        res.json(orders);
-    });
-
-    return router;
-}
+const authRouter = express.Router();
 
 authRouter.docs = [
   {
@@ -121,4 +111,4 @@ function readAuthToken(req) {
   return null;
 }
 
-module.exports = { createAuthRouter, setAuthUser, setAuth };
+module.exports = { authRouter, setAuthUser, setAuth };

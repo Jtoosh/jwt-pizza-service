@@ -1,20 +1,9 @@
 const express = require('express');
 const config = require('../config.js');
-const { Role} = require('../database/database.js');
+const { Role, DB} = require('../database/database.js');
 const { authRouter } = require('./authRouter.js');
 const { asyncHandler, StatusCodeError } = require('../endpointHelper.js');
-const {DB} = require('../database/database.js');
 
-function createOrderRouter(db){
-    const router = express.Router();
-    this.db = db;
-    router.get('/', async (req, res) => {
-        const orders = await db.getOrders(req.user);
-        res.json(orders);
-    });
-
-    return router;
-}
 const orderRouter = express.Router();
 
 orderRouter.docs = [
@@ -55,7 +44,7 @@ orderRouter.docs = [
 orderRouter.get(
   '/menu',
   asyncHandler(async (req, res) => {
-    res.send(await this.db.getMenu());
+    res.send(await DB.getMenu());
   })
 );
 
@@ -69,8 +58,8 @@ orderRouter.put(
     }
 
     const addMenuItemReq = req.body;
-    await this.db.addMenuItem(addMenuItemReq);
-    res.send(await this.db.getMenu());
+    await DB.addMenuItem(addMenuItemReq);
+    res.send(await DB.getMenu());
   })
 );
 
@@ -79,7 +68,7 @@ orderRouter.get(
   '/',
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
-    res.json(await this.db.getOrders(req.user, req.query.page));
+    res.json(await DB.getOrders(req.user, req.query.page));
   })
 );
 
@@ -104,4 +93,4 @@ orderRouter.post(
   })
 );
 
-module.exports = createOrderRouter;
+module.exports = orderRouter;

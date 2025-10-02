@@ -7,7 +7,7 @@ function randomName() {
 }
 const username = randomName();
 const testUser = { name: username, email: 'reg@test.com', password: 'a' };
-const testMenuItem = {id: 1000000, title: 'Student', description: 'No topping, no sauce, just carbs', image: 'pizza9.png', price: 0.0001};
+const testMenuItem = {id: 1, title: 'Student', description: 'No topping, no sauce, just carbs', image: 'pizza9.png', price: 0.0001};
 let testUserAuthToken;
 let adminUserAuthToken;
 
@@ -28,21 +28,28 @@ beforeAll(async () =>{
 });
 
 beforeAll( async () =>{
-    const addTestMenuResponse = await request(app).put('/api/order/menu').set('Authorization', `Bearer ${adminUserAuthToken}`).send(testMenuItem);
-    expect(addTestMenuResponse.status).toBe(200);
+   await DB.addMenuItem(testMenuItem);
 });
+
+afterAll(async () => {
+    await DB.deleteDatabase();
+})
 
 test('get menu', async () =>{
     const getMenuRes = await request(app).get('/api/order/menu');
 
     expect(getMenuRes.status).toBe(200);
-    expect(getMenuRes.body).toContain(testMenuItem)
+    expect(getMenuRes.body).toContainEqual(testMenuItem)
 });
 
 test('add menu item', async () =>{
     // TODO Clear out DB first
+
     const newMenuItem = { title: randomName(), description: randomName() , image:"pizza9.png", price: 0.0000001 }
     const addMenuItemRes = await request(app).put('/api/order/menu').set('Authorization', `Bearer ${adminUserAuthToken}`).send(newMenuItem);
+
+    expect(addMenuItemRes.status).toBe(200);
+    expect(addMenuItemRes.body).toContainEqual(testMenuItem, newMenuItem);
 })
 
 async function createAdminUser() {

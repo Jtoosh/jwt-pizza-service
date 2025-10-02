@@ -365,8 +365,10 @@ class DB {
               if (!dbExists) {
                   console.log('Database does not exist, nothing to delete');
               }
+              if (config.db.connection.database === 'test_db') {
+                  await connection.query(`DROP DATABASE ${config.db.connection.database}`);
+              }
 
-              await connection.query(`DROP DATABASE ${config.db.connection.database}`);
           }finally {
               connection.end();
           }
