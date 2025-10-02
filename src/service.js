@@ -1,13 +1,16 @@
 const express = require('express');
-const { authRouter, setAuthUser } = require('./routes/authRouter.js');
-const orderRouter = require('./routes/orderRouter.js');
-const franchiseRouter = require('./routes/franchiseRouter.js');
-const userRouter = require('./routes/userRouter.js');
+const {DB} = require('./database/database.js');
+const { createAuthRouter, setAuthUser } = require('./routes/authRouter.js');
+const createOrderRouter = require('./routes/orderRouter.js');
+const createFranchiseRouter = require('./routes/franchiseRouter.js');
+const createUserRouter = require('./routes/userRouter.js');
 const version = require('./version.json');
 const config = require('./config.js');
 
+
 const app = express();
 app.use(express.json());
+const db = new DB(config);
 app.use(setAuthUser);
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
@@ -19,10 +22,10 @@ app.use((req, res, next) => {
 
 const apiRouter = express.Router();
 app.use('/api', apiRouter);
-apiRouter.use('/auth', authRouter);
-apiRouter.use('/user', userRouter);
-apiRouter.use('/order', orderRouter);
-apiRouter.use('/franchise', franchiseRouter);
+apiRouter.use('/auth', creatAuthRouter(db));
+apiRouter.use('/user', createUserRouter(db));
+apiRouter.use('/order', createOrderRouter(db));
+apiRouter.use('/franchise', createFranchiseRouter(db));
 
 apiRouter.use('/docs', (req, res) => {
   res.json({

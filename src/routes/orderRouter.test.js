@@ -5,7 +5,6 @@ const { Role, DB } = require('../database/database.js');
 function randomName() {
     return Math.random().toString(36).substring(2, 12);
 }
-
 const username = randomName();
 const testUser = { name: username, email: 'reg@test.com', password: 'a' };
 const testMenuItem = {id: 1000000, title: 'Student', description: 'No topping, no sauce, just carbs', image: 'pizza9.png', price: 0.0001};

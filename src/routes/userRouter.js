@@ -1,9 +1,21 @@
 const express = require('express');
 const { asyncHandler } = require('../endpointHelper.js');
-const { DB, Role } = require('../database/database.js');
+const { Role } = require('../database/database.js');
 const { authRouter, setAuth } = require('./authRouter.js');
+const {DB} = require('../database/database.js');
 
 const userRouter = express.Router();
+
+function createUserRouter(db){
+    const router = express.Router();
+
+    router.get('/', async (req, res) => {
+        const users = await db.getUser(req.user);
+        res.json(users);
+    });
+
+    return router;
+}
 
 userRouter.docs = [
   {
@@ -51,4 +63,4 @@ userRouter.put(
   })
 );
 
-module.exports = userRouter;
+module.exports = createUserRouter;

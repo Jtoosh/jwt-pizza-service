@@ -1,9 +1,20 @@
 const express = require('express');
 const config = require('../config.js');
-const { Role, DB } = require('../database/database.js');
+const { Role} = require('../database/database.js');
 const { authRouter } = require('./authRouter.js');
 const { asyncHandler, StatusCodeError } = require('../endpointHelper.js');
+const {DB} = require('../database/database.js');
 
+function createOrderRouter(db){
+    const router = express.Router();
+
+    router.get('/', async (req, res) => {
+        const orders = await db.getOrders(req.user);
+        res.json(orders);
+    });
+
+    return router;
+}
 const orderRouter = express.Router();
 
 orderRouter.docs = [
@@ -93,4 +104,4 @@ orderRouter.post(
   })
 );
 
-module.exports = orderRouter;
+module.exports = createOrderRouter;

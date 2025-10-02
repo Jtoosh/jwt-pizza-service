@@ -1,9 +1,19 @@
 const express = require('express');
-const { DB, Role } = require('../database/database.js');
+const {  Role } = require('../database/database.js');
 const { authRouter } = require('./authRouter.js');
 const { StatusCodeError, asyncHandler } = require('../endpointHelper.js');
+const {DB} = require('../database/database.js');
 
-const franchiseRouter = express.Router();
+function createFranchiseRouter(db){
+    const router = express.Router();
+
+    router.get('/', async (req, res) => {
+        const franchises = await db.getFranchises(req.user);
+        res.json(franchises);
+    });
+
+    return router;
+}
 
 franchiseRouter.docs = [
   {
@@ -135,4 +145,4 @@ franchiseRouter.delete(
   })
 );
 
-module.exports = franchiseRouter;
+module.exports = createFranchiseRouter;
