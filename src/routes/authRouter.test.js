@@ -1,15 +1,16 @@
 const request = require('supertest');
 const app = require('../service');
 const { Role, DB } = require('../database/database.js');
+const utils = require('../test.utils.js');
 
-const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
+const testUser = { name: utils.randomName(), email: 'reg@test.com', password: 'a' };
 let testUserAuthToken;
 
 beforeAll(async () => {
-    testUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
+    testUser.email = testUser.name + '@test.com';
     const registerRes = await request(app).post('/api/auth').send(testUser);
     testUserAuthToken = registerRes.body.token;
-    expectValidJwt(testUserAuthToken);
+    utils.expectValidJwt(testUserAuthToken);
 });
 
 afterAll(async () => {
@@ -28,7 +29,7 @@ test ('register negative', async () => {
 test('login', async () => {
     const loginRes = await request(app).put('/api/auth').send(testUser);
     expect(loginRes.status).toBe(200);
-    expectValidJwt(loginRes.body.token);
+    utils.expectValidJwt(loginRes.body.token);
 
     const expectedUser = { ...testUser, roles: [{ role: 'diner' }] };
     delete expectedUser.password;
@@ -50,7 +51,3 @@ test('logout', async () => {
    expect(logoutRes.status).toBe(200);
    expect(logoutRes.body.message).toMatch('logout successful');
 });
-
-function expectValidJwt(potentialJwt) {
-    expect(potentialJwt).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
-}

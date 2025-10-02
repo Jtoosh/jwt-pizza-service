@@ -1,34 +1,36 @@
 const request = require('supertest');
 const app = require('../service');
 const { Role, DB } = require('../database/database.js');
+const utils = require('../test.utils.js');
 
-function randomName() {
-    return Math.random().toString(36).substring(2, 12);
-}
-const username = randomName();
+const username = utils.randomName();
 const testUser = { name: username, email: 'reg@test.com', password: 'a' };
 const testMenuItem = {id: 1, title: 'Student', description: 'No topping, no sauce, just carbs', image: 'pizza9.png', price: 0.0001};
+let adminUser;
 let testUserAuthToken;
 let adminUserAuthToken;
 
-// Create a diner test user and login
+
 beforeAll(async () => {
     testUser.email = username + '@test.com';
     const registerRes = await request(app).post('/api/auth').send(testUser);
     testUserAuthToken = registerRes.body.token;
-    expectValidJwt(testUserAuthToken);
+    utils.expectValidJwt(testUserAuthToken);
 });
 
-// TODO: Create a admin test user and login
 beforeAll(async () =>{
-    const adminUser = await createAdminUser();
+    adminUser = await utils.createAdminUser();
     const loginRes = await request(app).put('/api/auth/').send(adminUser);
     adminUserAuthToken = loginRes.body.token;
-    expectValidJwt(loginRes.body.token);
+    utils.expectValidJwt(loginRes.body.token);
 });
 
 beforeAll( async () =>{
    await DB.addMenuItem(testMenuItem);
+   const franchise = {name: utils.randomName(), admins: [{email: adminUser.email}]};
+   await DB.createFranchise(franchise);
+   const store = { franchiseId: 1, name: utils.randomName()};
+   await DB.createStore(1, store);
 });
 
 afterAll(async () => {
@@ -43,24 +45,19 @@ test('get menu', async () =>{
 });
 
 test('add menu item', async () =>{
-    // TODO Clear out DB first
 
-    const newMenuItem = { title: randomName(), description: randomName() , image:"pizza9.png", price: 0.0000001 }
+    const newMenuItem = { title: utils.randomName(), description: utils.randomName() , image:"pizza9.png", price: 0.0000001 }
     const addMenuItemRes = await request(app).put('/api/order/menu').set('Authorization', `Bearer ${adminUserAuthToken}`).send(newMenuItem);
 
     expect(addMenuItemRes.status).toBe(200);
     expect(addMenuItemRes.body).toContainEqual(testMenuItem, newMenuItem);
-})
+});
 
-async function createAdminUser() {
-    let user = { password: 'toomanysecrets', roles: [{ role: Role.Admin }] };
-    user.name = randomName();
-    user.email = user.name + '@admin.com';
+test('make order', async () =>{
 
-    user = await DB.addUser(user);
-    return { ...user, password: 'toomanysecrets' };
-}
+    const newOrder = {franchiseId: 1, storeId: 1, items: [testMenuItem]};
+    const makeOrderRes = await request(app).post('/api/order').set('Authorization', `Bearer ${testUserAuthToken}`).send(newOrder);
 
-function expectValidJwt(potentialJwt) {
-    expect(potentialJwt).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
-}
+    expect(makeOrderRes.status).toBe(200);
+    utils.expectValidJwt(makeOrderRes.body.jwt);
+});
