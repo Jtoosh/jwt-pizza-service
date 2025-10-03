@@ -356,7 +356,7 @@ class DB {
     }
   }
 
-  async deleteDatabase(connection){
+  async deleteDatabase(){
       try{
           const connection = await this._getConnection();
           try{

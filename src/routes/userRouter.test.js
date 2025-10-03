@@ -1,4 +1,4 @@
-const {Role, DB} = require('../database/database');
+const { DB} = require('../database/database');
 const request = require("supertest");
 const app = require("../service");
 const utils = require('../test.utils.js');
@@ -6,7 +6,7 @@ const utils = require('../test.utils.js');
 const username = utils.randomName();
 const testUser = { name: username, email: 'reg@test.com', password: 'a' };
 let testUserAuthToken;
-let adminUserAuthToken;
+// let adminUserAuthToken;
 
 
 
@@ -17,10 +17,10 @@ beforeAll(async () => {
     utils.expectValidJwt(testUserAuthToken);
 
 
-    const adminUser = await utils.createAdminUser();
-    const loginRes = await request(app).put('/api/auth/').send(adminUser);
-    adminUserAuthToken = loginRes.body.token;
-    utils.expectValidJwt(loginRes.body.token);
+    // const adminUser = await utils.createAdminUser();
+    // const loginRes = await request(app).put('/api/auth/').send(adminUser);
+    // adminUserAuthToken = loginRes.body.token;
+    // utils.expectValidJwt(loginRes.body.token);
 });
 
 afterAll(async () => {

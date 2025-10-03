@@ -1,4 +1,4 @@
-const {Role, DB} = require('../database/database');
+const { DB} = require('../database/database');
 const request = require("supertest");
 const app = require("../service");
 const utils = require('../test.utils.js');
@@ -14,7 +14,7 @@ beforeAll(async () => {
     utils.expectValidJwt(loginRes.body.token);
 
     testFranchise = await utils.createFranchise(testAdmin.name, testAdmin.email);
-    const testStore = await utils.createStore(testFranchise, testAdmin.name);
+
 });
 
 afterAll(async () => {
