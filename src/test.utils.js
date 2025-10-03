@@ -25,14 +25,14 @@ class TestUtils {
         return testMenuItem;
     }
 
-    async createFranchise(adminUser) {
-        const franchise = {name: adminUser.name, admins: [{email: adminUser.email}]};
+    async createFranchise(name, email) {
+        const franchise = {name: name, admins: [{email: email}]};
         await DB.createFranchise(franchise);
         return franchise;
     }
 
-    async createStore(franchise, adminUser){
-        const store = {name: adminUser.name , franchiseId: 1}; //I set the admin user name as the store name to help testing validation
+    async createStore(franchise, name){
+        const store = {name: name , franchiseId: 1}; //I set the admin user name as the store name to help testing validation
         await DB.createStore(store);
         return store;
     }

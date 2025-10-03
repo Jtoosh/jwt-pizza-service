@@ -6,7 +6,6 @@ const utils = require('../test.utils.js');
 const username = utils.randomName();
 const testUser = { name: username, email: 'reg@test.com', password: 'a' };
 let testMenuItem;
-let adminUser;
 let testUserAuthToken;
 let adminUserAuthToken;
 
@@ -19,18 +18,16 @@ beforeAll(async () => {
 });
 
 beforeAll(async () =>{
-    adminUser = await utils.createAdminUser();
+    // adminUser =
+    const adminUser = await utils.createAdminUser();
     const loginRes = await request(app).put('/api/auth/').send(adminUser);
     adminUserAuthToken = loginRes.body.token;
     utils.expectValidJwt(loginRes.body.token);
-});
 
-beforeAll( async () =>{
-   testMenuItem = await utils.createMenuItem();
-   const testFranchise = await utils.createFranchise(adminUser);
-   const store = { franchiseId: 1, name: utils.randomName()};
-   await DB.createStore(1, store);
-   // await utils.createStore(testFranchise) WIP
+    testMenuItem = await utils.createMenuItem();
+    const testFranchise = await utils.createFranchise(adminUser.name, adminUser.email);
+    const store = { id: testFranchise.id, name: utils.randomName()};
+    await DB.createStore(1, store);
 });
 
 afterAll(async () => {

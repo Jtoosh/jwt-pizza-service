@@ -18,7 +18,7 @@ beforeAll(async () => {
     adminUserAuthToken = loginRes.body.token;
     utils.expectValidJwt(loginRes.body.token);
 
-    testFranchise = await utils.createFranchise(testAdmin);
+    testFranchise = await utils.createFranchise(testAdmin.name, testAdmin.email);
 
 });
 
@@ -42,7 +42,16 @@ test('list franchises', async () =>{
     expect(listRes.status).toBe(200);
     expect(listRes.body.franchises.length).toBeGreaterThan(0);
     expect(listRes.body.franchises[0].name).toMatch(testAdmin.name);
-})
+});
+
+test('delete franchise', async () =>{
+    const randomName = utils.randomName();
+    const franchiseToDelete = await utils.createFranchise(randomName, testAdmin.email);
+    const deleteRes = await request(app).delete(`/api/franchise//:${franchiseToDelete.id}`).set('Authorization', `Bearer ${adminUserAuthToken}`);
+
+    expect(deleteRes.status).toBe(200);
+    expect(deleteRes.body.message).toMatch('franchise deleted');
+});
 
 test('create store', async () =>{
     const newStore = {name: testAdmin.name, franchiseId: testFranchise.id};
