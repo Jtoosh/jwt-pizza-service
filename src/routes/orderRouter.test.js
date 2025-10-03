@@ -15,10 +15,8 @@ beforeAll(async () => {
     const registerRes = await request(app).post('/api/auth').send(testUser);
     testUserAuthToken = registerRes.body.token;
     utils.expectValidJwt(testUserAuthToken);
-});
 
-beforeAll(async () =>{
-    // adminUser =
+
     const adminUser = await utils.createAdminUser();
     const loginRes = await request(app).put('/api/auth/').send(adminUser);
     adminUserAuthToken = loginRes.body.token;
