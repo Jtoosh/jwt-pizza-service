@@ -32,8 +32,8 @@ class TestUtils {
     }
 
     async createStore(franchise, name){
-        const store = {name: name , franchiseId: 1}; //I set the admin user name as the store name to help testing validation
-        await DB.createStore(store);
+        const store = {name: name , franchiseId: franchise.id}; //I set the admin user name as the store name to help testing validation
+        await DB.createStore(franchise.id, store);
         return store;
     }
 

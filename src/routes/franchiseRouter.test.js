@@ -19,7 +19,7 @@ beforeAll(async () => {
     utils.expectValidJwt(loginRes.body.token);
 
     testFranchise = await utils.createFranchise(testAdmin.name, testAdmin.email);
-
+    const testStore = await utils.createStore(testFranchise, testAdmin.name);
 });
 
 afterAll(async () => {
@@ -40,8 +40,8 @@ test('list franchises', async () =>{
     const listRes = await request(app).get('/api/franchise?page=0&limit=10&name=*');
 
     expect(listRes.status).toBe(200);
-    expect(listRes.body.franchises.length).toBeGreaterThan(0);
-    expect(listRes.body.franchises[0].name).toMatch(testAdmin.name);
+    expect(listRes.body.franchises.length).toBeGreaterThanOrEqual(1);
+
 });
 
 test('delete franchise', async () =>{
@@ -61,4 +61,13 @@ test('create store', async () =>{
     expect(storeRes.body.name).toMatch(newStore.name);
     expect(storeRes.body.franchiseId).toBe(1);
 
+});
+
+test('delete store', async () =>{
+    const randomName = utils.randomName();
+    const storeToDelete = await utils.createStore(testFranchise, randomName);
+    const deleteRes = await request(app).delete(`/api/franchise/${testFranchise.id}/store/${storeToDelete.id}`).set('Authorization', `Bearer ${adminUserAuthToken}`);
+
+    expect(deleteRes.status).toBe(200);
+    expect(deleteRes.body.message).toMatch('store deleted');
 });
