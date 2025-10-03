@@ -5,7 +5,7 @@ const utils = require('../test.utils.js');
 
 const username = utils.randomName();
 const testUser = { name: username, email: 'reg@test.com', password: 'a' };
-const testMenuItem = {id: 1, title: 'Student', description: 'No topping, no sauce, just carbs', image: 'pizza9.png', price: 0.0001};
+let testMenuItem;
 let adminUser;
 let testUserAuthToken;
 let adminUserAuthToken;
@@ -26,11 +26,11 @@ beforeAll(async () =>{
 });
 
 beforeAll( async () =>{
-   await DB.addMenuItem(testMenuItem);
-   const franchise = {name: utils.randomName(), admins: [{email: adminUser.email}]};
-   await DB.createFranchise(franchise);
+   testMenuItem = await utils.createMenuItem();
+   const testFranchise = await utils.createFranchise(adminUser);
    const store = { franchiseId: 1, name: utils.randomName()};
    await DB.createStore(1, store);
+   // await utils.createStore(testFranchise) WIP
 });
 
 afterAll(async () => {
@@ -41,7 +41,7 @@ test('get menu', async () =>{
     const getMenuRes = await request(app).get('/api/order/menu');
 
     expect(getMenuRes.status).toBe(200);
-    expect(getMenuRes.body).toContainEqual(testMenuItem)
+    expect(getMenuRes.body[0]).toStrictEqual(testMenuItem)
 });
 
 test('add menu item', async () =>{
@@ -50,14 +50,15 @@ test('add menu item', async () =>{
     const addMenuItemRes = await request(app).put('/api/order/menu').set('Authorization', `Bearer ${adminUserAuthToken}`).send(newMenuItem);
 
     expect(addMenuItemRes.status).toBe(200);
-    expect(addMenuItemRes.body).toContainEqual(testMenuItem, newMenuItem);
+    expect(addMenuItemRes.body).toContainEqual(testMenuItem );
 });
 
 test('make order', async () =>{
-
+    testMenuItem.menuId = 1;
     const newOrder = {franchiseId: 1, storeId: 1, items: [testMenuItem]};
     const makeOrderRes = await request(app).post('/api/order').set('Authorization', `Bearer ${testUserAuthToken}`).send(newOrder);
 
     expect(makeOrderRes.status).toBe(200);
+    expect(makeOrderRes.body.order.items[0]).toStrictEqual(testMenuItem);
     utils.expectValidJwt(makeOrderRes.body.jwt);
 });

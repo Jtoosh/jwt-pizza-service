@@ -10,12 +10,15 @@ function randomName() {
 
 let testAdmin;
 let adminUserAuthToken;
+let testFranchise;
 
 beforeAll(async () => {
     testAdmin = await utils.createAdminUser()
     const loginRes = await request(app).put('/api/auth/').send(testAdmin);
     adminUserAuthToken = loginRes.body.token;
     utils.expectValidJwt(loginRes.body.token);
+
+    testFranchise = await utils.createFranchise(testAdmin);
 
 });
 
@@ -34,9 +37,19 @@ test('create franchise positive', async () =>{
 });
 
 test('list franchises', async () =>{
-    const listRes = await request(app).get('api/franchise?page=0&limit=10&name=*');
+    const listRes = await request(app).get('/api/franchise?page=0&limit=10&name=*');
 
     expect(listRes.status).toBe(200);
     expect(listRes.body.franchises.length).toBeGreaterThan(0);
     expect(listRes.body.franchises[0].name).toMatch(testAdmin.name);
 })
+
+test('create store', async () =>{
+    const newStore = {name: testAdmin.name, franchiseId: testFranchise.id};
+    const storeRes = await request(app).post(`/api/franchise/${testFranchise.id}/store`).set('Authorization', `Bearer ${adminUserAuthToken}`).send(newStore);
+
+    expect(storeRes.status).toBe(200);
+    expect(storeRes.body.name).toMatch(newStore.name);
+    expect(storeRes.body.franchiseId).toBe(1);
+
+});

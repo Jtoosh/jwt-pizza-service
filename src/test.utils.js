@@ -19,6 +19,23 @@ class TestUtils {
         expect(potentialJwt).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
     }
 
+    async createMenuItem(){
+        const testMenuItem = {title: this.randomName(), description: this.randomName(), image: 'pizza9.png', price: 0.0001, id : 1};
+        await DB.addMenuItem(testMenuItem);
+        return testMenuItem;
+    }
+
+    async createFranchise(adminUser) {
+        const franchise = {name: adminUser.name, admins: [{email: adminUser.email}]};
+        await DB.createFranchise(franchise);
+        return franchise;
+    }
+
+    async createStore(franchise, adminUser){
+        const store = {name: adminUser.name , franchiseId: 1}; //I set the admin user name as the store name to help testing validation
+        await DB.createStore(store);
+        return store;
+    }
 
 }
 
