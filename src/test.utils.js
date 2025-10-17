@@ -18,6 +18,14 @@ class TestUtils {
         return [registerRes.body.user, registerRes.body.token];
     }
 
+    async registerUsers(amount, service){
+        let userNamesAndTokens = []
+        for (let i = 0; i < amount; i++) {
+            userNamesAndTokens[i] = await this.registerUser(service);
+        }
+        return userNamesAndTokens;
+    }
+
     async createAdminUser() {
         let user = {password: 'toomanysecrets', roles: [{role: Role.Admin}]};
         user.name = this.randomName();

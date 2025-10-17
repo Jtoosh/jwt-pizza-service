@@ -73,8 +73,10 @@ userRouter.get(
     '/',
     authRouter.authenticateToken,
     asyncHandler(async (req, res) => {
-        await DB.get
-        res.json({});
+        const users = await DB.getAllUsers();
+        const page = Number(req.query.page);
+        const limit = Number(req.query.limit);
+        res.json(users.slice((page - 1) * limit, page * limit));
     })
 );
 

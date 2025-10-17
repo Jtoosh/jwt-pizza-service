@@ -75,6 +75,19 @@ class DB {
     }
   }
 
+  async getAllUsers(){
+      const connection = await this.getConnection();
+      try{
+          const users = await this.query(connection, `SELECT * FROM user`);
+          if (!users){
+              throw new StatusCodeError('no users', 404);
+          }
+          return users;
+      } finally {
+          connection.end();
+      }
+  }
+
   async updateUser(userId, name, email, password) {
     const connection = await this.getConnection();
     try {

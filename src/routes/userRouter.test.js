@@ -42,10 +42,24 @@ test('list users unauthorized', async () => {
 
 test('list users authorized', async () => {
     const [user, userToken] = await utils.registerUser(request(app));
+    const userMocks = await utils.registerUsers(8, request(app))
     const listUsersRes = await request(app)
-        .get('/api/user')
+        .get('/api/user?page=1&limit=10&name=*')
         .set('Authorization', 'Bearer ' + userToken);
     expect(listUsersRes.status).toBe(200);
 
-    expect(listUsersRes.body.users.length).toMatch(10);
+    expect(listUsersRes.body.length).toBeGreaterThanOrEqual(1);
+    expect(listUsersRes.body.length).toBe(10);
+
+    const listUsersRes2 = await request(app)
+        .get('/api/user?page=2&limit=10&name=*')
+        .set('Authorization', 'Bearer ' + userToken);
+
+    expect(listUsersRes2.status).toBe(200);
+
+    expect(listUsersRes2.body.length).toBeGreaterThanOrEqual(1);
+    expect(listUsersRes2.body.length).toBeLessThanOrEqual(10);
+
+    expect(listUsersRes2.body[0].email).toMatch(userMocks[7][0].email);
+
 });
