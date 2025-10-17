@@ -33,6 +33,19 @@ test('update user negative', async () => {
 
     expect(updateRes.statusCode).toBe(403);
     expect(updateRes.body.message).toMatch('unauthorized');
-
-
 })
+
+test('list users unauthorized', async () => {
+    const listUsersRes = await request(app).get('/api/user');
+    expect(listUsersRes.statusCode).toBe(401);
+})
+
+test('list users authorized', async () => {
+    const [user, userToken] = await utils.registerUser(request(app));
+    const listUsersRes = await request(app)
+        .get('/api/user')
+        .set('Authorization', 'Bearer ' + userToken);
+    expect(listUsersRes.status).toBe(200);
+
+    expect(listUsersRes.body.users.length).toMatch(10);
+});
