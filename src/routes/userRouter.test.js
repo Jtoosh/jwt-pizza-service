@@ -6,7 +6,7 @@ const utils = require('../test.utils.js');
 const username = utils.randomName();
 const testUser = { name: username, email: 'reg@test.com', password: 'a' };
 let testUserAuthToken;
-// let adminUserAuthToken;
+let adminUserAuthToken;
 
 
 
@@ -17,10 +17,10 @@ beforeAll(async () => {
     utils.expectValidJwt(testUserAuthToken);
 
 
-    // const adminUser = await utils.createAdminUser();
-    // const loginRes = await request(app).put('/api/auth/').send(adminUser);
-    // adminUserAuthToken = loginRes.body.token;
-    // utils.expectValidJwt(loginRes.body.token);
+    const adminUser = await utils.createAdminUser();
+    const loginRes = await request(app).put('/api/auth/').send(adminUser);
+    adminUserAuthToken = loginRes.body.token;
+    utils.expectValidJwt(loginRes.body.token);
 });
 
 afterAll(async () => {
@@ -35,17 +35,24 @@ test('update user negative', async () => {
     expect(updateRes.body.message).toMatch('unauthorized');
 })
 
-test('list users unauthorized', async () => {
+test('list users unautheticated', async () => {
     const listUsersRes = await request(app).get('/api/user');
     expect(listUsersRes.statusCode).toBe(401);
 })
 
-test('list users authorized', async () => {
-    const [user, userToken] = await utils.registerUser(request(app));
-    const userMocks = await utils.registerUsers(8, request(app))
+test('list users unauthorized', async () => {
     const listUsersRes = await request(app)
         .get('/api/user?page=1&limit=10&name=*')
-        .set('Authorization', 'Bearer ' + userToken);
+        .set('Authorization', 'Bearer ' + testUserAuthToken);
+    expect(listUsersRes.statusCode).toBe(403);
+    expect(listUsersRes.body.message).toMatch('unauthorized');
+});
+
+test('list users authorized', async () => {
+    const userMocks = await utils.registerUsers(8, request(app));
+    const listUsersRes = await request(app)
+        .get('/api/user?page=1&limit=10&name=*')
+        .set('Authorization', 'Bearer ' + adminUserAuthToken);
     expect(listUsersRes.status).toBe(200);
 
     expect(listUsersRes.body.length).toBeGreaterThanOrEqual(1);
@@ -53,7 +60,7 @@ test('list users authorized', async () => {
 
     const listUsersRes2 = await request(app)
         .get('/api/user?page=2&limit=10&name=*')
-        .set('Authorization', 'Bearer ' + userToken);
+        .set('Authorization', 'Bearer ' + adminUserAuthToken);
 
     expect(listUsersRes2.status).toBe(200);
 
@@ -63,3 +70,7 @@ test('list users authorized', async () => {
     expect(listUsersRes2.body[0].email).toMatch(userMocks[7][0].email);
 
 });
+
+// test('delete user', async () => {
+//     const [] = await utils.registerUser(request(app));
+// });
