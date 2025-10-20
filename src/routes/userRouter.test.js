@@ -71,6 +71,11 @@ test('list users authorized', async () => {
 
 });
 
-// test('delete user', async () => {
-//     const [] = await utils.registerUser(request(app));
-// });
+test('delete user', async () => {
+    // eslint-disable-next-line no-unused-vars
+    const [userToDelete, userToDeleteToken] = await utils.registerUser(request(app));
+    const deleteUserRes = await request(app).delete(`/api/user/${userToDelete.id}`).set("Authorization", `Bearer ${adminUserAuthToken}`);
+
+    expect(deleteUserRes.status).toBe(200);
+    expect(deleteUserRes.body.message).toMatch('user deleted');
+});
