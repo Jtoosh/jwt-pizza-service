@@ -62,4 +62,6 @@ const tableCreateStatements = [
   )`,
 ];
 
-module.exports = { tableCreateStatements };
+const tables = ['auth', 'user', 'menu', 'franchise', 'store', 'userRole', 'dinerOrder', 'orderItem'];
+
+module.exports = { tableCreateStatements, tables };

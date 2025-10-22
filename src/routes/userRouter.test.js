@@ -17,8 +17,8 @@ beforeAll(async () => {
     utils.expectValidJwt(testUserAuthToken);
 
 
-    const adminUser = await utils.createAdminUser();
-    const loginRes = await request(app).put('/api/auth/').send(adminUser);
+    const adminUser = {"name": '常用名字', "email":"a@jwt.com", "password":"admin"}; // Default admin user
+    const loginRes = await request(app).put('/api/auth').send(adminUser);
     adminUserAuthToken = loginRes.body.token;
     utils.expectValidJwt(loginRes.body.token);
 });
@@ -49,7 +49,8 @@ test('list users unauthorized', async () => {
 });
 
 test('list users authorized', async () => {
-    const userMocks = await utils.registerUsers(8, request(app));
+    // With the test user and the default admin users, this call will make 12 total users
+    const userMocks = await utils.registerUsers(10, request(app));
     const listUsersRes = await request(app)
         .get('/api/user?page=1&limit=10&name=*')
         .set('Authorization', 'Bearer ' + adminUserAuthToken);
@@ -67,7 +68,9 @@ test('list users authorized', async () => {
     expect(listUsersRes2.body.length).toBeGreaterThanOrEqual(1);
     expect(listUsersRes2.body.length).toBeLessThanOrEqual(10);
 
-    expect(listUsersRes2.body[0].email).toMatch(userMocks[7][0].email);
+    //Page 1 will give from userMocks[0] to userMocks[7] (8 users, including admin and test user)
+    //Page 2 should start with userMocks[8]
+    expect(listUsersRes2.body[0].email).toMatch(userMocks[8][0].email);
 
 });
 

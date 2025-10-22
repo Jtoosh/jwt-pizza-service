@@ -400,6 +400,24 @@ class DB {
       }
   }
 
+  async truncateAllTables() {
+    const connection = await this.getConnection();
+    try {
+      await connection.query('SET FOREIGN_KEY_CHECKS = 0');
+      for (const table of dbModel.tables) {
+        await this.query(connection, `TRUNCATE TABLE ${table}`);
+      } 
+    }finally {
+        const adminUser = await connection.query('SELECT * FROM user WHERE email=?', ['a@jwt.com'])
+        if (adminUser.length === 0) {
+          const defaultAdmin = { name: '常用名字', email: 'a@jwt.com', password: 'admin', roles: [{ role: Role.Admin }] };
+          this.addUser(defaultAdmin);
+        }
+        await connection.query('SET FOREIGN_KEY_CHECKS = 1');
+        connection.end();
+      }
+  }
+
   async checkDatabaseExists(connection) {
     const [rows] = await connection.execute(`SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?`, [config.db.connection.database]);
     return rows.length > 0;
