@@ -7,7 +7,16 @@ let testAdmin;
 let adminUserAuthToken;
 let testFranchise;
 
+let testUser = { name: utils.randomName() , email: 'user@test.com', password: 'a' };
+let testUserAuthToken;
+
 beforeAll(async () => {
+
+    testUser.email = testUser.name + '@test.com';
+    const registerRes = await request(app).post('/api/auth').send(testUser);
+    testUserAuthToken = registerRes.body.token;
+    utils.expectValidJwt(testUserAuthToken);
+
     testAdmin = await utils.createAdminUser()
     const loginRes = await request(app).put('/api/auth/').send(testAdmin);
     adminUserAuthToken = loginRes.body.token;
@@ -18,7 +27,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    await DB.deleteDatabase();
+    await DB.truncateAllTables();
 })
 
 test('create franchise positive', async () =>{
@@ -29,6 +38,15 @@ test('create franchise positive', async () =>{
     expect(createRes.body.name).toMatch(newFranchise.name);
     expect(createRes.body.admins[0].email).toMatch(testAdmin.email);
 
+});
+
+test('create franchise negative not admin', async () =>{
+    const newFranchise = {name: utils.randomName(), admins: []};
+    const createRes = await request(app).post('/api/franchise').set('Authorization', `Bearer ${testUserAuthToken}`).send(newFranchise);
+
+    expect(createRes.status).toBe(403);
+    expect(createRes.body.message).toMatch('unable to create a franchise');
+    
 });
 
 test('list franchises', async () =>{

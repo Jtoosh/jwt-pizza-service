@@ -14,7 +14,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-   await DB.deleteDatabase();
+   await DB.truncateAllTables();
 })
 
 

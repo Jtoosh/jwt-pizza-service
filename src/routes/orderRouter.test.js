@@ -17,7 +17,7 @@ beforeAll(async () => {
     utils.expectValidJwt(testUserAuthToken);
 
 
-    const adminUser = {"name": '常用名字', "email":"a@jwt.com", "password":"admin"}; //Default admin user
+    const adminUser = await utils.createAdminUser() //Default admin user
     const loginRes = await request(app).put('/api/auth/').send(adminUser);
     adminUserAuthToken = loginRes.body.token;
     utils.expectValidJwt(loginRes.body.token);
@@ -29,7 +29,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    await DB.deleteDatabase();
+    await DB.truncateAllTables();
 })
 
 test('get menu', async () =>{
