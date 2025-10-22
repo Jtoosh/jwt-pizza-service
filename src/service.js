@@ -6,25 +6,19 @@ const userRouter = require('./routes/userRouter.js');
 const version = require('./version.json');
 const config = require('./config.js');
 
-const allowedOrigins = ['http://localhost:3000', 'https://pizza.jtdevops.click'];
+// const allowedOrigins = ['http://localhost:3000', 'https://pizza.jtdevops.click'];
 
 const app = express();
 app.use(express.json());
 
 app.use(setAuthUser);
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)){
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  
+
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-  if(req.method === 'OPTIONS'){
-    return res.sendStatus(204);
-  }
   next();
 });
 
