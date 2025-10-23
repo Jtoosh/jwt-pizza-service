@@ -75,14 +75,23 @@ class DB {
     }
   }
 
-  async getAllUsers(){
+  async getAllUsers(page = 0, limit = 10, nameFilter = '*'){
       const connection = await this.getConnection();
+
+      const offset = page * limit;
+      nameFilter = nameFilter.replace(/\*/g, '%');
+
       try{
-          const users = await this.query(connection, `SELECT * FROM user`);
+          let users = await this.query(connection, `SELECT id, name FROM USER WHERE name LIKE ? LIMIT ${limit + 1} OFFSET ${offset}`, [nameFilter]);
           if (!users){
               throw new StatusCodeError('no users', 404);
           }
-          return users;
+          const more = users.length > limit;
+          if (more) {
+            users = users.slice(0, limit);
+          }
+
+          return [users, more];
       } finally {
           connection.end();
       }
