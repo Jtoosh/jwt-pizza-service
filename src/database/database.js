@@ -82,7 +82,7 @@ class DB {
       nameFilter = nameFilter.replace(/\*/g, '%');
 
       try{
-          let users = await this.query(connection, `SELECT id, name FROM USER WHERE name LIKE ? LIMIT ${limit + 1} OFFSET ${offset}`, [nameFilter]);
+          let users = await this.query(connection, `SELECT id, name FROM user WHERE name LIKE ? LIMIT ${limit + 1} OFFSET ${offset}`, [nameFilter]);
           if (!users){
               throw new StatusCodeError('no users', 404);
           }
