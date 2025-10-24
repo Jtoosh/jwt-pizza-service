@@ -6,7 +6,7 @@ class TestUtils {
         return Math.random().toString(36).substring(2, 12);
     }
 
-     async registerUser(service) {
+    async registerUser(service) {
         const testUser = {
             name: 'pizza diner',
             email: `${this.randomName()}@test.com`,
@@ -15,7 +15,7 @@ class TestUtils {
         const registerRes = await service.post('/api/auth').send(testUser);
         registerRes.body.user.password = testUser.password;
 
-        return [registerRes.body.user, registerRes.body.token];
+        return [registerRes.body.user, registerRes.body.token, testUser.password];
     }
 
     async registerUsers(amount, service){

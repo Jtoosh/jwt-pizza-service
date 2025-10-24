@@ -2,6 +2,7 @@ const { DB} = require('../database/database');
 const request = require("supertest");
 const app = require("../service");
 const utils = require('../test.utils.js');
+const { StatusCodeError } = require('../endpointHelper.js');
 
 const username = utils.randomName();
 const testUser = { name: username, email: 'reg@test.com', password: 'a' };
@@ -79,9 +80,11 @@ test('list users authorized', async () => {
 
 test('delete user', async () => {
     // eslint-disable-next-line no-unused-vars
-    const [userToDelete, userToDeleteToken] = await utils.registerUser(request(app));
+    const [userToDelete, userToDeleteToken, userToDeletePassword] = await utils.registerUser(request(app));
     const deleteUserRes = await request(app).delete(`/api/user/${userToDelete.id}`).set("Authorization", `Bearer ${adminUserAuthToken}`);
 
     expect(deleteUserRes.status).toBe(200);
     expect(deleteUserRes.body.message).toMatch('user deleted');
+
+    await expect(DB.getUser(userToDelete.email, userToDeletePassword)).rejects.toThrow(new StatusCodeError('unknown user', 404));
 });
