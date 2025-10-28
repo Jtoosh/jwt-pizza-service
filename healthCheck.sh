@@ -1,3 +1,12 @@
-curl https://pizza-service.jtdevops.click/ | jq
+host=https://pizza-service.jtdevops.click/
 
-curl -X PUT https://pizza-service.jtdevops.click/api/auth -d '{"email":"a@jwt.com", "password":"admin"}' -H 'Content-Type: application/json' | jq
+curl $host | jq
+
+login=${host}api/auth
+
+curl -X PUT $login -d '{"email":"a@jwt.com", "password":"admin"}' -H 'Content-Type: application/json' | jq
+
+menu=${host}api/order/menu
+
+curl $menu | jq
+
