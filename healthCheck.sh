@@ -10,3 +10,6 @@ menu=${host}api/order/menu
 
 curl $menu | jq
 
+# version=${host}version.json
+
+# curl -s $version | jq
