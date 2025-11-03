@@ -1,5 +1,7 @@
 host=https://pizza-service.jtdevops.click/
 
+echo "Testing $host"
+
 curl $host | jq
 
 login=${host}api/auth
