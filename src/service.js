@@ -5,11 +5,12 @@ const franchiseRouter = require('./routes/franchiseRouter.js');
 const userRouter = require('./routes/userRouter.js');
 const version = require('./version.json');
 const config = require('./config.js');
-
-// const allowedOrigins = ['http://localhost:3000', 'https://pizza.jtdevops.click'];
+const metrics  = require('./metric.js');
 
 const app = express();
 app.use(express.json());
+
+app.use(metrics.requestTracker);
 
 app.use(setAuthUser);
 app.use((req, res, next) => {
@@ -21,6 +22,10 @@ app.use((req, res, next) => {
 
   next();
 });
+
+app.use(metrics.requestTracker);
+app.use(metrics.requestTracker);
+app.use(metrics.requestTracker);
 
 const apiRouter = express.Router();
 app.use('/api', apiRouter);
