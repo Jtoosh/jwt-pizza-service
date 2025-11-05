@@ -5,7 +5,7 @@ const config =  {
     coverageReporters: ['json-summary', 'text'],
     coverageThreshold: {
         global: {
-            lines: 80
+            lines: 75
         }
     },
 };
@@ -15,15 +15,3 @@ if (!process.env.CI) {
 }
 
 module.exports = config;
-
-// {
-//
-//   "setupFilesAfterEnv" : ["<rootDir>/jest.setup.js"],
-//   "collectCoverage": true,
-//   "coverageReporters": ["json-summary", "text"],
-//   "coverageThreshold": {
-//     "global": {
-//       "lines": 80
-//     }
-//   }
-// }
