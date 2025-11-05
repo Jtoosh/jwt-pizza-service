@@ -2,6 +2,7 @@ const os = require('os');
 const config = require('./config.js');
 
 const requests = {};
+const authAttempts = { success: 0, failure: 0 };
 
 // Middleware to track requests per endpoint
 function requestTracker(req, res, next) {
@@ -24,6 +25,15 @@ function getMemoryUsagePercentage() {
   return memoryUsage.toFixed(2);
 }
 
+//TODO: Middleware for auth success/failure metrics, pass to authRouter.js in service.js
+function authMetrics(req, res, next) {
+  // Implementation goes here
+  next();
+}
+
+
+//TODO: Middleware for pizza purchase metrics
+
 // This will periodically send the collected metrics to Grafana
 setInterval(() => {
   const metrics = [];
@@ -36,6 +46,7 @@ setInterval(() => {
   sendMetricToGrafana(metrics);
 }, 10000);
 
+//TODO: Abstract this into a separate class/module
 function createMetric(metricName, metricValue, metricUnit, metricType, valueType, attributes) {
   attributes = { ...attributes, source: config.metrics.source };
 
