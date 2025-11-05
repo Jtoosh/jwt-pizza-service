@@ -35,16 +35,18 @@ function getMemoryUsagePercentage() {
 //TODO: Middleware for pizza purchase metrics
 
 // This will periodically send the collected metrics to Grafana
-setInterval(() => {
-  const metrics = [];
-  Object.keys(requests).forEach((endpoint) => {
-    metrics.push(createMetric('requests', requests[endpoint], '1', 'sum', 'asInt', { endpoint }));
-    metrics.push(createMetric('memory.usage', getMemoryUsagePercentage(), '%', 'gauge', 'asDouble', {}));
-    metrics.push(createMetric('cpu.usage', getCpuUsagePercentage(), '%', 'gauge', 'asDouble', {}));
-  });
+if (process.env.NODE_ENV !== 'test') {
+    setInterval(() => {
+    const metrics = [];
+    Object.keys(requests).forEach((endpoint) => {
+      metrics.push(createMetric('requests', requests[endpoint], '1', 'sum', 'asInt', { endpoint }));
+      metrics.push(createMetric('memory.usage', getMemoryUsagePercentage(), '%', 'gauge', 'asDouble', {}));
+      metrics.push(createMetric('cpu.usage', getCpuUsagePercentage(), '%', 'gauge', 'asDouble', {}));
+    });
 
-  sendMetricToGrafana(metrics);
-}, 10000);
+    sendMetricToGrafana(metrics);
+  }, 10000);
+}
 
 //TODO: Abstract this into a separate class/module
 function createMetric(metricName, metricValue, metricUnit, metricType, valueType, attributes) {
