@@ -2,7 +2,7 @@ const os = require('os');
 const config = require('./config.js');
 
 const requests = {};
-const authAttempts = { success: 0, failure: 0 };
+// const authAttempts = { success: 0, failure: 0 };
 
 // Middleware to track requests per endpoint
 function requestTracker(req, res, next) {
@@ -26,10 +26,10 @@ function getMemoryUsagePercentage() {
 }
 
 //TODO: Middleware for auth success/failure metrics, pass to authRouter.js in service.js
-function authMetrics(req, res, next) {
-  // Implementation goes here
-  next();
-}
+// function authMetrics(req, res, next) {
+//   // Implementation goes here
+//   next();
+// }
 
 
 //TODO: Middleware for pizza purchase metrics
