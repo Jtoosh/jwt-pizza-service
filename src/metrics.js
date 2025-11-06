@@ -7,18 +7,10 @@ const latencyByEndpoint = new Map();
 // const authAttempts = { success: 0, failure: 0 };
 
 function recordLatency(endpoint, latencyMs) {
-  // Define latency buckets in milliseconds
-  const bounds = [50, 100, 250, 500, 1000, 2500, 5000];
-  let aggregator = latencyByEndpoint.get(endpoint);
-  if (!aggregator) {
-    aggregator = { bounds, bucketCounts: new Array(bounds.length + 1).fill(0), count: 0, sum: 0 };
-    latencyByEndpoint.set(endpoint, aggregator);
+  if (!latencyByEndpoint.has(endpoint)) {
+    latencyByEndpoint.set(endpoint, [latencyMs]);
   }
-  aggregator.count += 1;
-  aggregator.sum += latencyMs;
-  let idx = bounds.findIndex((b) => latencyMs <= b);
-  if (idx === -1) idx = bounds.length; // overflow bucket
-  aggregator.bucketCounts[idx] += 1;
+  latencyByEndpoint.get(endpoint).push(latencyMs);
 }
 
 // Middleware to track requests per endpoint
@@ -75,11 +67,11 @@ if (process.env.NODE_ENV !== 'test') {
     metrics.push(createMetric('memory.usage', getMemoryUsagePercentage(), '%', 'gauge', 'asDouble', {}));
     metrics.push(createMetric('cpu.usage', getCpuUsagePercentage(), '%', 'gauge', 'asDouble', {}));
 
-    for (const [endpoint, aggregator] of latencyByEndpoint.entries()) {
-      metrics.push(createHistogramMetric('request.latency', 'ms', aggregator, { endpoint }));
-      // reset for next interval
-      latencyByEndpoint.set(endpoint, { bounds: aggregator.bounds, bucketCounts: new Array(aggregator.bounds.length + 1).fill(0), count: 0, sum: 0 });
-    }
+    latencyByEndpoint.forEach((latencies, endpoint) => {
+      const sumLatency = latencies.reduce((a, b) => a + b, 0);
+      const avgLatency = sumLatency / latencies.length;
+      metrics.push(createMetric('latency.avg', avgLatency, 'ms', 'gauge', 'asDouble', { endpoint }));
+    });
 
     sendMetricToGrafana(metrics);
   }, 10000);
@@ -116,29 +108,6 @@ function createMetric(metricName, metricValue, metricUnit, metricType, valueType
   }
 
   return metric;
-}
-
-// Create proper OTLP histogram metric
-
-
-function createHistogramMetric(metricName, metricUnit, aggregatorParam, attributes) {
-  attributes = { ...attributes, source: config.metrics.source };
-  const dataPoints = {
-    timeUnixNano: Date.now() * 1_000_000,
-    count: aggregatorParam.count,
-    sum: aggregatorParam.sum,
-    bucketCounts: aggregatorParam.bucketCounts,
-    explicitBounds: aggregatorParam.bounds,
-    attributes: Object.entries(attributes).map(([key, val]) => ({ key, value: { stringValue: String(val) } })),
-  };
-  return {
-    name: metricName,
-    unit: metricUnit,
-    histogram: {
-      aggregationTemporality: 'AGGREGATION_TEMPORALITY_DELTA',
-      dataPoints: [dataPoints],
-    },
-  };
 }
 
 function sendMetricToGrafana(metrics) {
