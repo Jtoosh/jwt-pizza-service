@@ -122,8 +122,8 @@ if (process.env.NODE_ENV !== "test") {
           endpoint,
         })
       );
-      // Reset latencies after sending
-      latencyByEndpoint.set(endpoint, []);
+      // // Reset latencies after sending
+      // latencyByEndpoint.set(endpoint, []);
     });
 
     metrics.push(
@@ -244,7 +244,7 @@ function sendMetricToGrafana(metrics) {
   })
     .then((response) => {
       if (!response.ok) {
-        throw new Error(`HTTP status: ${response.message}`);
+        throw new Error(`HTTP status: ${response.status}`);
       }
     })
     .catch((error) => {

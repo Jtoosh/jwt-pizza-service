@@ -67,6 +67,7 @@ authRouter.post(
     }
     const user = await DB.addUser({ name, email, password, roles: [{ role: Role.Diner }] });
     const auth = await setAuth(user);
+    metrics.recordAuthAttempt(true);
     res.json({ user: user, token: auth });
   })
 );
@@ -78,6 +79,7 @@ authRouter.put(
     const { email, password } = req.body;
     const user = await DB.getUser(email, password);
     const auth = await setAuth(user);
+    metrics.recordAuthAttempt(true);
     res.json({ user: user, token: auth });
   })
 );
@@ -96,7 +98,6 @@ authRouter.delete(
 async function setAuth(user) {
   const token = jwt.sign(user, config.jwtSecret);
   await DB.loginUser(user.id, token);
-  metrics.recordAuthAttempt(true);
   return token;
 }
 
