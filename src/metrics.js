@@ -10,7 +10,8 @@ let pizzaRevenue = 0;
 let pizzaFailures = 0;
 const pizzaLatencyMs = [];
 
-// const authAttempts = { success: 0, failure: 0 };
+const authAttempts = { success: 0, failure: 0 };
+let activeUserCount = 0;
 
 function recordLatency(endpoint, latencyMs) {
   if (!latencyByEndpoint.has(endpoint)) {
@@ -52,11 +53,22 @@ function getMemoryUsagePercentage() {
   return memoryUsage.toFixed(2);
 }
 
-//TODO: Middleware for auth success/failure metrics, pass to authRouter.js in service.js
-// function authMetrics(req, res, next) {
-//   // Implementation goes here
-//   next();
-// }
+// TODO: Middleware for auth success/failure metrics, pass to authRouter.js in service.js
+function recordAuthAttempt(isSuccess) {
+  // Implementation goes here
+  if (isSuccess) {
+    authAttempts.success += 1;
+    activeUserCount += 1;
+  } else {
+    authAttempts.failure += 1;
+  }
+}
+
+function recordLogout() {
+  if (activeUserCount > 0) {
+    activeUserCount -= 1;
+  }
+}
 
 // Function for pizza purchase metrics
 function pizzaPurchaseMetrics(isSuccess, price, latencyMs, numberOfItems) {
@@ -112,6 +124,8 @@ if (process.env.NODE_ENV !== "test") {
           endpoint,
         })
       );
+      // Reset latencies after sending
+      latencyByEndpoint.set(endpoint, []);
     });
 
     metrics.push(
@@ -136,7 +150,41 @@ if (process.env.NODE_ENV !== "test") {
           {}
         )
       );
+      pizzaLatencyMs.length = 0; // Reset after sending
     }
+
+    metrics.push(
+      createMetric(
+        "auth.attempts.success",
+        authAttempts.success,
+        "1", 
+        "sum",
+        "asInt",
+        {}
+      )
+    );
+    metrics.push(
+      createMetric(
+        "auth.attempts.failure",
+        authAttempts.failure,
+        "1",
+        "sum",
+        "asInt",
+        {}
+      )
+    );
+    metrics.push(
+      createMetric(
+        "active.users",
+        activeUserCount,
+        "1",
+        "gauge",
+        "asInt",
+        {}
+      )
+    );
+
+    // Reset metrics after sending 
 
     sendMetricToGrafana(metrics);
   }, 10000);
@@ -219,4 +267,6 @@ module.exports = {
   getCpuUsagePercentage,
   getMemoryUsagePercentage,
   pizzaPurchaseMetrics,
+  recordAuthAttempt,
+  recordLogout,
 };
