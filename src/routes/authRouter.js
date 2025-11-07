@@ -40,11 +40,9 @@ async function setAuthUser(req, res, next) {
         // Check the database to make sure the token is valid.
         req.user = jwt.verify(token, config.jwtSecret);
         req.user.isRole = (role) => !!req.user.roles.find((r) => r.role === role);
-        metrics.recordAuthAttempt(true);
       }
     } catch {
       req.user = null;
-      metrics.recordAuthAttempt(false);
     }
   }
   next();
@@ -55,6 +53,7 @@ authRouter.authenticateToken = (req, res, next) => {
   if (!req.user) {
     return res.status(401).send({ message: 'unauthorized' });
   }
+  metrics.recordAuthAttempt(false);
   next();
 };
 
@@ -97,6 +96,7 @@ authRouter.delete(
 async function setAuth(user) {
   const token = jwt.sign(user, config.jwtSecret);
   await DB.loginUser(user.id, token);
+  metrics.recordAuthAttempt(true);
   return token;
 }
 
