@@ -53,9 +53,8 @@ function getMemoryUsagePercentage() {
   return memoryUsage.toFixed(2);
 }
 
-// TODO: Middleware for auth success/failure metrics, pass to authRouter.js in service.js
+// Function for auth success/failure metrics
 function recordAuthAttempt(isSuccess) {
-  // Implementation goes here
   if (isSuccess) {
     authAttempts.success += 1;
     activeUserCount += 1;
@@ -72,7 +71,6 @@ function recordLogout() {
 
 // Function for pizza purchase metrics
 function pizzaPurchaseMetrics(isSuccess, price, latencyMs, numberOfItems) {
-  // Implementation goes here
   if (isSuccess) {
     pizzaSuccesses += numberOfItems;
     pizzaRevenue += price;
@@ -150,14 +148,15 @@ if (process.env.NODE_ENV !== "test") {
           {}
         )
       );
-      pizzaLatencyMs.length = 0; // Reset after sending
+      // Reset pizza latencies after sending
+      pizzaLatencyMs.length = 0;
     }
 
     metrics.push(
       createMetric(
         "auth.attempts.success",
         authAttempts.success,
-        "1", 
+        "1",
         "sum",
         "asInt",
         {}
@@ -174,17 +173,8 @@ if (process.env.NODE_ENV !== "test") {
       )
     );
     metrics.push(
-      createMetric(
-        "active.users",
-        activeUserCount,
-        "1",
-        "gauge",
-        "asInt",
-        {}
-      )
+      createMetric("active.users", activeUserCount, "1", "gauge", "asInt", {})
     );
-
-    // Reset metrics after sending 
 
     sendMetricToGrafana(metrics);
   }, 10000);
