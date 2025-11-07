@@ -1,9 +1,13 @@
-const os = require('os');
-const config = require('./config.js');
-const { randomUUID } = require('crypto');
+const os = require("os");
+const config = require("./config.js");
+const { randomUUID } = require("crypto");
 
 const requests = {};
 const latencyByEndpoint = new Map();
+let pizzaSuccesses = 0;
+let pizzaRevenue = 0;
+let pizzaFailures = 0;
+const pizzaLatencyMs = [];
 // const authAttempts = { success: 0, failure: 0 };
 
 function recordLatency(endpoint, latencyMs) {
@@ -13,13 +17,13 @@ function recordLatency(endpoint, latencyMs) {
   latencyByEndpoint.get(endpoint).push(latencyMs);
 }
 
-// Middleware to track requests per endpoint
+// Middleware to track requests per endpoint and latency per request
 function requestTracker(req, res, next) {
   const requestID = randomUUID();
   req.requestID = requestID;
 
   const endpointStart = Date.now();
-  res.on('finish', () => {
+  res.on("finish", () => {
     const endpointEnd = Date.now();
     const latencyMs = endpointEnd - endpointStart;
 
@@ -28,7 +32,7 @@ function requestTracker(req, res, next) {
 
     recordLatency(endpoint, latencyMs);
   });
-  
+
   next();
 }
 
@@ -52,33 +56,99 @@ function getMemoryUsagePercentage() {
 //   next();
 // }
 
-
 //TODO: Middleware for pizza purchase metrics
+function pizzaPurchaseMetrics(isSuccess, price, latencyMs) {
+  // Implementation goes here
+  if (isSuccess) {
+    pizzaSuccesses += 1;
+    pizzaRevenue += price;
+  } else if (!isSuccess) {
+    pizzaFailures += 1;
+  }
+  pizzaLatencyMs.push(latencyMs);
+}
 
 // This will periodically send the collected metrics to Grafana
-if (process.env.NODE_ENV !== 'test') {
-    setInterval(() => {
+if (process.env.NODE_ENV !== "test") {
+  setInterval(() => {
     const metrics = [];
 
     Object.keys(requests).forEach((endpoint) => {
-      metrics.push(createMetric('requests', requests[endpoint], '1', 'sum', 'asInt', { endpoint }));
+      metrics.push(
+        createMetric("requests", requests[endpoint], "1", "sum", "asInt", {
+          endpoint,
+        })
+      );
     });
 
-    metrics.push(createMetric('memory.usage', getMemoryUsagePercentage(), '%', 'gauge', 'asDouble', {}));
-    metrics.push(createMetric('cpu.usage', getCpuUsagePercentage(), '%', 'gauge', 'asDouble', {}));
+    metrics.push(
+      createMetric(
+        "memory.usage",
+        getMemoryUsagePercentage(),
+        "%",
+        "gauge",
+        "asDouble",
+        {}
+      )
+    );
+    metrics.push(
+      createMetric(
+        "cpu.usage",
+        getCpuUsagePercentage(),
+        "%",
+        "gauge",
+        "asDouble",
+        {}
+      )
+    );
 
     latencyByEndpoint.forEach((latencies, endpoint) => {
       const sumLatency = latencies.reduce((a, b) => a + b, 0);
       const avgLatency = sumLatency / latencies.length;
-      metrics.push(createMetric('latency.avg', avgLatency, 'ms', 'gauge', 'asDouble', { endpoint }));
+      metrics.push(
+        createMetric("latency.avg", avgLatency, "ms", "gauge", "asDouble", {
+          endpoint,
+        })
+      );
     });
+
+    metrics.push(
+      createMetric("pizza.successes", pizzaSuccesses, "1", "sum", "asInt", {})
+    );
+    metrics.push(
+      createMetric("pizza.failures", pizzaFailures, "1", "sum", "asInt", {})
+    );
+    metrics.push(
+      createMetric("pizza.revenue", pizzaRevenue, "USD", "sum", "asDouble", {})
+    );
+    if (pizzaLatencyMs.length > 0) {
+      const sumPizzaLatency = pizzaLatencyMs.reduce((a, b) => a + b, 0);
+      const avgPizzaLatency = sumPizzaLatency / pizzaLatencyMs.length;
+      metrics.push(
+        createMetric(
+          "pizza.latency.avg",
+          avgPizzaLatency,
+          "ms",
+          "gauge",
+          "asDouble",
+          {}
+        )
+      );
+    }
 
     sendMetricToGrafana(metrics);
   }, 10000);
 }
 
 //TODO: Abstract this into a separate class/module
-function createMetric(metricName, metricValue, metricUnit, metricType, valueType, attributes) {
+function createMetric(
+  metricName,
+  metricValue,
+  metricUnit,
+  metricType,
+  valueType,
+  attributes
+) {
   attributes = { ...attributes, source: config.metrics.source };
 
   const metric = {
@@ -102,8 +172,9 @@ function createMetric(metricName, metricValue, metricUnit, metricType, valueType
     });
   });
 
-  if (metricType === 'sum') {
-    metric[metricType].aggregationTemporality = 'AGGREGATION_TEMPORALITY_CUMULATIVE';
+  if (metricType === "sum") {
+    metric[metricType].aggregationTemporality =
+      "AGGREGATION_TEMPORALITY_CUMULATIVE";
     metric[metricType].isMonotonic = true;
   }
 
@@ -124,9 +195,12 @@ function sendMetricToGrafana(metrics) {
   };
 
   fetch(`${config.metrics.url}`, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify(body),
-    headers: { Authorization: `Bearer ${config.metrics.apiKey}`, 'Content-Type': 'application/json' },
+    headers: {
+      Authorization: `Bearer ${config.metrics.apiKey}`,
+      "Content-Type": "application/json",
+    },
   })
     .then((response) => {
       if (!response.ok) {
@@ -134,7 +208,7 @@ function sendMetricToGrafana(metrics) {
       }
     })
     .catch((error) => {
-      console.error('Error pushing metrics:', error);
+      console.error("Error pushing metrics:", error);
     });
 }
 
@@ -142,4 +216,5 @@ module.exports = {
   requestTracker,
   getCpuUsagePercentage,
   getMemoryUsagePercentage,
+  pizzaPurchaseMetrics,
 };
