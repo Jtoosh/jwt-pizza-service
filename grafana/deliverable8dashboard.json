@@ -179,7 +179,6 @@
           "refId": "E"
         }
       ],
-      "timeFrom": "10m",
       "title": "JWT Pizza Requests per minute",
       "type": "timeseries"
     },
@@ -684,7 +683,7 @@
         {
           "editorMode": "builder",
           "expr": "pizza_latency_avg_milliseconds{source=\"jwt-pizza-service\"}",
-          "legendFormat": "__auto",
+          "legendFormat": "Pizza creation",
           "range": true,
           "refId": "A"
         }
@@ -700,7 +699,7 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-RdYlGr"
+            "mode": "palette-classic"
           },
           "custom": {
             "axisBorderShow": false,
@@ -790,6 +789,7 @@
           },
           "editorMode": "builder",
           "expr": "auth_attempts_failure_total{source=\"jwt-pizza-service\"}",
+          "format": "time_series",
           "hide": false,
           "instant": false,
           "legendFormat": "Failures",
@@ -903,12 +903,12 @@
     "list": []
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Pizza Dashboard",
   "uid": "jt5vhtb",
-  "version": 39
+  "version": 42
 }
