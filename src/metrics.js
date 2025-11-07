@@ -4,10 +4,12 @@ const { randomUUID } = require("crypto");
 
 const requests = {};
 const latencyByEndpoint = new Map();
+
 let pizzaSuccesses = 0;
 let pizzaRevenue = 0;
 let pizzaFailures = 0;
 const pizzaLatencyMs = [];
+
 // const authAttempts = { success: 0, failure: 0 };
 
 function recordLatency(endpoint, latencyMs) {
@@ -56,11 +58,11 @@ function getMemoryUsagePercentage() {
 //   next();
 // }
 
-//TODO: Middleware for pizza purchase metrics
-function pizzaPurchaseMetrics(isSuccess, price, latencyMs) {
+// Function for pizza purchase metrics
+function pizzaPurchaseMetrics(isSuccess, price, latencyMs, numberOfItems) {
   // Implementation goes here
   if (isSuccess) {
-    pizzaSuccesses += 1;
+    pizzaSuccesses += numberOfItems;
     pizzaRevenue += price;
   } else if (!isSuccess) {
     pizzaFailures += 1;

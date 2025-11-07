@@ -90,11 +90,11 @@ orderRouter.post(
     const j = await r.json();
     if (r.ok) {
       // Get metrics for pizza latency, success, price, send to metrics.js
-      metrics.pizzaPurchaseMetrics(true, order.items.reduce((sum, item) => sum + item.price, 0), factoryLatencyMs);
+      metrics.pizzaPurchaseMetrics(true, order.items.reduce((sum, item) => sum + item.price, 0), factoryLatencyMs, order.items.length);
       res.send({ order, followLinkToEndChaos: j.reportUrl, jwt: j.jwt });
     } else {
       // Get metrics for pizza latency, failure, price, send to metrics.js
-      metrics.pizzaPurchaseMetrics(false, 0, factoryLatencyMs);
+      metrics.pizzaPurchaseMetrics(false, 0, factoryLatencyMs, order.items.length);
       res.status(500).send({ message: 'Failed to fulfill order at factory', followLinkToEndChaos: j.reportUrl });
     }
   })
