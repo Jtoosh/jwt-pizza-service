@@ -6,7 +6,7 @@ const { Role } = require('../model/model.js');
 const dbModel = require('./dbModel.js');
 let logger;
 if (process.env.NODE_ENV !== 'test') {
-  const Logger = require('pizza-logger');
+  const Logger = require('../logger.js');
   logger = new Logger(config);
 }
 

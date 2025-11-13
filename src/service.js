@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(metrics.requestTracker);
 
 if (process.env.NODE_ENV !== "test"){ 
-  const Logger = require('pizza-logger')
+  const Logger = require('./logger.js')
 
   logger = new Logger(config)
 

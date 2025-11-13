@@ -5,6 +5,12 @@ const { authRouter } = require('./authRouter.js');
 const { asyncHandler, StatusCodeError } = require('../endpointHelper.js');
 const metrics = require('../metrics.js');
 
+let logger;
+if (process.env.NODE_ENV !== 'test') {
+  const Logger = require('../logger.js');
+  logger = new Logger(config);
+}
+
 const orderRouter = express.Router();
 
 orderRouter.docs = [
@@ -80,13 +86,21 @@ orderRouter.post(
   asyncHandler(async (req, res) => {
     const orderReq = req.body;
     const order = await DB.addDinerOrder(req.user, orderReq);
+    const orderInfo = { diner: { id: req.user.id, name: req.user.name, email: req.user.email }, order } 
+
+    logger.factoryLogger(orderInfo);
+
     const startTime = Date.now();
+
     const r = await fetch(`${config.factory.url}/api/order`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', authorization: `Bearer ${config.factory.apiKey}` },
-      body: JSON.stringify({ diner: { id: req.user.id, name: req.user.name, email: req.user.email }, order }),
+      body: JSON.stringify(orderInfo),
     });
     const factoryLatencyMs = Date.now() - startTime;
+
+    logger.factoryLogger(r.body);
+
     const j = await r.json();
     if (r.ok) {
       // Get metrics for pizza latency, success, price, send to metrics.js
