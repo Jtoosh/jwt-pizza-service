@@ -88,7 +88,9 @@ orderRouter.post(
     const order = await DB.addDinerOrder(req.user, orderReq);
     const orderInfo = { diner: { id: req.user.id, name: req.user.name, email: req.user.email }, order } 
 
-    logger.factoryLogger(orderInfo);
+    if (logger){
+      logger.factoryLogger(orderInfo);
+    }
 
     const startTime = Date.now();
 
@@ -98,8 +100,10 @@ orderRouter.post(
       body: JSON.stringify(orderInfo),
     });
     const factoryLatencyMs = Date.now() - startTime;
-
-    logger.factoryLogger(r.body);
+    
+    if (logger){
+      logger.factoryLogger(r.body);
+    }
 
     const j = await r.json();
     if (r.ok) {
