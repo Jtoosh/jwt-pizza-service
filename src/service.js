@@ -8,18 +8,18 @@ const config = require('./config.js');
 const metrics  = require('./metrics.js');
 let logger;
 
-if (process.env.NODE_ENV !== "test"){ 
-  const Logger = require('pizza-logger')
-
-  logger = new Logger(config)
-}
-
-
 const app = express();
 app.use(express.json());
 
 app.use(metrics.requestTracker);
-app.use(logger.httpLogger);
+
+if (process.env.NODE_ENV !== "test"){ 
+  const Logger = require('pizza-logger')
+
+  logger = new Logger(config)
+
+  app.use(logger.httpLogger);
+}
 
 app.use(setAuthUser);
 app.use((req, res, next) => {
