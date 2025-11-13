@@ -5,6 +5,12 @@ const { StatusCodeError, asyncHandler } = require("../endpointHelper.js");
 
 const franchiseRouter = express.Router();
 
+let logger;
+if (process.env.NODE_ENV !== "test") {
+  const Logger = require("../logger.js");
+  logger = new Logger(require("../config.js"));
+}
+
 franchiseRouter.docs = [
   {
     method: "GET",
@@ -111,7 +117,11 @@ franchiseRouter.post(
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
     if (!req.user.isRole(Role.Admin)) {
-      throw new StatusCodeError("unable to create a franchise", 403);
+      const error = new StatusCodeError("unable to create a franchise", 403);
+      if (logger) {
+        logger.unhandledErrorLogger(error);
+      }
+      throw error;
     }
 
     const franchise = req.body;
@@ -141,7 +151,12 @@ franchiseRouter.post(
       (!req.user.isRole(Role.Admin) &&
         !franchise.admins.some((admin) => admin.id === req.user.id))
     ) {
-      throw new StatusCodeError("unable to create a store", 403);
+      // Add error logger 
+      const error = new StatusCodeError("unable to create a store", 403);
+      if (logger) {
+        logger.unhandledErrorLogger(error);
+      }
+      throw error;
     }
 
     res.send(await DB.createStore(franchise.id, req.body));
@@ -160,7 +175,11 @@ franchiseRouter.delete(
       (!req.user.isRole(Role.Admin) &&
         !franchise.admins.some((admin) => admin.id === req.user.id))
     ) {
-      throw new StatusCodeError("unable to delete a store", 403);
+      const error = new StatusCodeError("unable to delete a store", 403);
+      if (logger) {
+        logger.unhandledErrorLogger(error);
+      }
+      throw error;
     }
 
     const storeId = Number(req.params.storeId);

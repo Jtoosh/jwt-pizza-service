@@ -67,7 +67,11 @@ class DB {
       const userResult = await this.query(connection, `SELECT * FROM user WHERE email=?`, [email]);
       const user = userResult[0];
       if (!user || (password && !(await bcrypt.compare(password, user.password)))) {
-        throw new StatusCodeError('unknown user', 404);
+        const error = new StatusCodeError('unknown user', 404);
+        if (logger) {
+          logger.unhandledErrorLogger(error);
+        }
+        throw error;
       }
 
       const roleResult = await this.query(connection, `SELECT * FROM userRole WHERE userId=?`, [user.id]);
@@ -90,7 +94,11 @@ class DB {
       try{
           let users = await this.query(connection, `SELECT id, name FROM user WHERE name LIKE ? LIMIT ${limit + 1} OFFSET ${offset}`, [nameFilter]);
           if (!users){
-              throw new StatusCodeError('no users', 404);
+              const error = new StatusCodeError('no users', 404);
+              if (logger) {
+                  logger.unhandledErrorLogger(error);
+              }
+              throw error;
           }
           const more = users.length > limit;
           if (more) {
@@ -137,7 +145,11 @@ class DB {
         await connection.commit();
       } catch {
         await connection.rollback();
-        throw new StatusCodeError('unable to delete user', 500);
+        const error = new StatusCodeError('unable to delete user', 500);
+        if (logger) {
+          logger.unhandledErrorLogger(error);
+        }
+        throw error;
       }
     } finally {
       connection.end();
@@ -211,7 +223,11 @@ class DB {
       for (const admin of franchise.admins) {
         const adminUser = await this.query(connection, `SELECT id, name FROM user WHERE email=?`, [admin.email]);
         if (adminUser.length == 0) {
-          throw new StatusCodeError(`unknown user for franchise admin ${admin.email} provided`, 404);
+          const error = new StatusCodeError(`unknown user for franchise admin ${admin.email} provided`, 404);
+          if (logger) {
+            logger.unhandledErrorLogger(error);
+          }
+          throw error;
         }
         admin.id = adminUser[0].id;
         admin.name = adminUser[0].name;
@@ -241,7 +257,11 @@ class DB {
         await connection.commit();
       } catch {
         await connection.rollback();
-        throw new StatusCodeError('unable to delete franchise', 500);
+        const error = new StatusCodeError('unable to delete franchise', 500);
+        if (logger) {
+          logger.unhandledErrorLogger(error);
+        }
+        throw error;
       }
     } finally {
       connection.end();
@@ -351,7 +371,11 @@ class DB {
     if (rows.length > 0) {
       return rows[0].id;
     }
-    throw new Error('No ID found');
+    const error = new Error('No ID found');
+    if (logger) {
+      logger.unhandledErrorLogger(error);
+    }
+    throw error;
   }
 
   async getConnection() {
