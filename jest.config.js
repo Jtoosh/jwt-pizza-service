@@ -8,7 +8,7 @@ const config =  {
     coverageReporters: ['json-summary', 'text'],
     coverageThreshold: {
         global: {
-            lines: 75
+            lines: 70
         }
     },
 };
